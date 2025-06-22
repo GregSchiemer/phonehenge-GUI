@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Start the Consort</title>
+  <link rel="stylesheet" href="css/bootstrap.min.css" />
+  <style>
+    body {
+      background-color: #f0f8ff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: sans-serif;
+    }
+    button {
+      font-size: 1.5rem;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="mb-4">Ready to begin?</h1>
+  <button class="btn btn-primary" id="startBtn">Start Consort</button>
+
+  <script type="module">
+    document.getElementById("startBtn").addEventListener("click", async () => {
+      console.log("👆 User gesture received. Starting consort...");
+
+      try {
+        const { Csound } = await import("./js/csound.js");
+        const csound = await Csound();
+        await csound.setOption("-odac");
+        await csound.compileOrc(`
+          sr = 44100
+          ksmps = 32
+          nchnls = 2
+          0dbfs = 1
+          instr 1
+            a1 oscili 0.5, 440
+            outs a1, a1
+          endin
+          i 1 0 1
+        `);
+        await csound.start();
+
+        console.log("✅ Csound is running.");
+        window.location.href = "sg.html?v=dev";
+      } catch (err) {
+        console.error("❌ Error running Csound:", err);
+      }
+    });
+  </script>
+</body>
+</html>

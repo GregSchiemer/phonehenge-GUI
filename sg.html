@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SG — WASM-GUI-only (FireFox Dev)</title>
+
+  <!-- Local Bootstrap (v4.3.1) CSS -->
+  <link rel="stylesheet" href="css/bootstrap.min.css" />
+  
+  <!-- Custom Background -->
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: hsl(0.725, 5%, 35%);
+    }
+
+    #container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+  </style>
+    
+  <!-- sg.js is the GUI -->
+  
+  <script src="js/sg.js"></script>
+  
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+    console.log("🎬 DOM fully loaded → launching GUI");
+    initSG();
+  });
+  </script>
+</head>
+
+<body>
+  <div id="container" class="text-center">
+    <canvas id="mobile" width="390" height="844"></canvas>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html type="module">
+<head>
+  <meta charset="UTF-8">
+  <title>Csound Mobile Consort - Dev Mode</title>
+  <link rel="stylesheet" href="./css/bootstrap.min.css">
+  <style>
+    canvas { border: 1px solid #ccc; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2 class="mt-3">🎛 Dev Mode: GUI + Csound</h2>
+    <canvas id="mobile" width="390" height="844"></canvas>
+    <!--canvas id="cnv" width="800" height="600"></canvas-->
+  </div>
+
+  <script type="module">
+    import { createCsound } from './js/csound.js';
+    import './js/sg.js';
+
+    const orc = `
+<CsoundSynthesizer>
+<CsOptions>
+-odac
+</CsOptions>
+<CsInstruments>
+instr 1
+  a1 oscili p5 * 0.05, p4
+  out a1
+endin
+</CsInstruments>
+<CsScore>
+</CsScore>
+</CsoundSynthesizer>
+`;
+
+    let csound;
+
+    window.addEventListener('load', async () => {
+      console.log("🎬 Page loaded → launching GUI and audio");
+
+      // Initialize the GUI layout
+      if (typeof initSG === 'function') {
+        initSG();
+        console.log("✅ initSG() launched");
+      } else {
+        console.warn("⚠️ initSG() not found — did sg.js fail to load?");
+      }
+
+      // Initialize Csound
+      const audioContext = new AudioContext();
+      csound = await createCsound(audioContext);
+      await csound.compileOrc(orc);
+      csound.start();
+
+      // Expose globally
+      window.csound = csound;
+      console.log("🚀 Csound ready");
+    });
+  </script>
+</body>
+</html>
