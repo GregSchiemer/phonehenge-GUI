@@ -329,6 +329,7 @@ ctx.w = cnv.width;
 ctx.h = cnv.height;
 ctx.mid = {x:ctx.w/2, y:ctx.h/2};
 ctx.pi2 = set2Pi();
+ctx.tapRadius = 50;
 ctx.cornerRadius = 25;    
 arrU.push({ cnv: cnv, ctx: ctx });
 initText(ctx);
@@ -534,14 +535,14 @@ drawPhoneHenge25(18);
 
 scanButtons();
 
-// * start animation
-let running = false;
+// start animation
+let animationStopped = true;
     cnv.addEventListener('click', function goSelectHandler() {
 		if(!running){
-			running = true;
+			animationStopped = false;
     		runConcert(ctx);
 		}
-    });	//*/
+    });
 }
 
 

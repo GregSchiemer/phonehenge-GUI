@@ -1,18 +1,15 @@
 /* animation.js*/
 
-//import { arrU } from './canvasUtils.js';  // define
-import { clockify } from './runTime.js';
+import { clockify } from './helpers.js';
 import { drawTopText, drawMidText, drawLowText } from './text.js';
 import { sequence } from './sequence.js';
 import { drawState } from './henge.js';
 
+/////
 /*53 preview states*/
-export function runConcert(ctxA){
+export function runConcert(ctxA, timePeriod = 1000){
 const totalStates = 31;
 const stateDuration = 24;
-
-//preview:1 concert: 1000 
-const fullSecond = 1;
 
 let now = performance.now();
 let state = 0;
@@ -26,7 +23,7 @@ if (state >= totalStates) {/*rerun player configuration*/
 	   
 const frame = timestamp - now;
 
-if (frame >= fullSecond) {
+if (frame >= timePeriod) {
 	seconds++;
 	now = timestamp;
 if ((seconds % stateDuration) == 0) {
