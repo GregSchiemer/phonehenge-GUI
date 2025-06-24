@@ -35,8 +35,6 @@ const timeStr = clockify(seconds);
 
 const isConcertMode = false;
 const activeMode = isConcertMode ? modeConfig.concert : modeConfig.preview;
-//const activeMode = modeConfig.concert.active ? modeConfig.concert : modeConfig.preview;
-//const activeMode = modeConfig.concert.active ? modeConfig.preview : modeConfig.concert;
 
 drawTopText('Phonehenge');
 drawSubText('tap clock to start');
