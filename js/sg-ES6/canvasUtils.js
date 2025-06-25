@@ -7,6 +7,27 @@ const arrB = [];
 
 export function initCanvas() {
   const cnv = document.getElementById('mobile');
+
+  // Dynamically size the canvas
+  cnv.width = window.innerWidth;
+  cnv.height = window.innerHeight;
+
+  const ctx = cnv.getContext('2d');
+  ctx.w = cnv.width;
+  ctx.h = cnv.height;
+  ctx.mid = { x: ctx.w / 2, y: ctx.h / 2 };
+  ctx.pi2 = parseFloat((2 * Math.PI).toFixed(2));
+  ctx.tapRadius = 50;
+  ctx.cornerRadius = 25;
+
+  arrU.push({ cnv, ctx });
+
+  // Optional: log the dynamic size
+  console.log(`📱 Canvas sized: ${ctx.w} × ${ctx.h}`);
+}
+/*
+export function initCanvas() {
+  const cnv = document.getElementById('mobile');
   const ctx = cnv.getContext('2d');
 
   ctx.w = cnv.width;
@@ -20,6 +41,7 @@ export function initCanvas() {
 
   arrU.push({ cnv, ctx });
 }
+*/
 
 export function saveCanvasBackground(f) {
   const { ctx } = arrU[0];

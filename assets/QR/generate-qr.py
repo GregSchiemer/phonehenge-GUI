@@ -1,122 +1,82 @@
-# assets/QR/generate-qr.py
-import os
 import qrcode
 from PIL import Image, ImageDraw, ImageFont
-
-
-QR_DIR = "assets/QR/qr-images"
-os.makedirs(QR_DIR, exist_ok=True)
-
-def generate_qr_image(name, url, qr_id, foreground, background, side=130):
-    extra_padding = int(side * 0.35)
-    qr_width = side + extra_padding
-    qr_height = side
-
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=3,
-    )
-    qr.add_data(url)
-    qr.make(fit=True)
-    img = qr.make_image(fill_color=foreground, back_color=background).convert('RGB')
-    img = img.resize((side, side), Image.LANCZOS)
-
-    full_img = Image.new("RGBA", (qr_width, qr_height), (0, 0, 0, 0))
-    full_img.paste(img, (extra_padding, 0))
-
-    if qr_id:
-        draw = ImageDraw.Draw(full_img)
-        try:
-            font = ImageFont.truetype("/Library/Fonts/Arial Bold.ttf", 24)
-        except IOError:
-            font = ImageFont.load_default()
-        text_width = draw.textlength(qr_id, font=font)
-        draw.text((extra_padding - text_width, 5), qr_id, fill="white", font=font)
-
-    output_file = f"qr_{name}.png"
-    output_path = os.path.join(QR_DIR, output_file)
-    full_img.save(output_path)
-    print(f"📌 Saved QR code: {output_path}")
-
-# 🎯 Example usage
-if __name__ == "__main__":
-    generate_qr_image(
-        name="localhost8001_concert",
-        url="http://localhost:8001/sg-es6-gui-V1.html?mode=concert",
-        qr_id="CONDUCTOR",
-        foreground="black",
-        background="white"
-    )
-
-    generate_qr_image(
-        name="localhost8002_preview",
-        url="http://localhost:8002/sg-es6-gui-V1.html?mode=preview",
-        qr_id="PLAYER",
-        foreground="blue",
-        background="white"
-    )
-# generate_qr.py
 import os
-import qrcode
-from PIL import Image, ImageDraw, ImageFont
+import socket
+import psutil
 
-OUTPUT_DIR = "QR_images"
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+# === Detect local IP ===
+def get_preferred_ip():
+    addrs = psutil.net_if_addrs()
+    for iface in addrs:
+        for snic in addrs[iface]:
+            if snic.family == socket.AF_INET and snic.address.startswith("192.168."):
+                return snic.address
+    # fallback: default method
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+    finally:
+        s.close()
+    return ip
 
-def generate_qr_image(name, url, qr_id="", foreground="black", background="white", side=130):
-    extra_padding = int(side * 0.35)
-    qr_width = side + extra_padding
-    qr_height = side
+"""
+def get_local_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # Connect to a public DNS server (no data sent)
+        s.connect(('8.8.8.8', 80))
+        ip = s.getsockname()[0]
+    finally:
+        s.close()
+    return ip
+"""
 
-    # Create QR code
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=3,
-    )
+local_ip = get_preferred_ip()
+print(f"🌐 Detected local IP: {local_ip}")
+
+# === Define QR targets ===
+base_path = f"http://{local_ip}"
+targets = {
+    "conductor": f"{base_path}:8001/sg-es6-gui-V1.html?mode=concert",
+    "player":    f"{base_path}:8002/sg-es6-gui-V1.html?mode=preview",
+}
+
+# === Output directory ===
+qr_dir = "assets/QR/qr-images"
+os.makedirs(qr_dir, exist_ok=True)
+
+# === Colors and labels ===
+styles = {
+    "conductor": {"label": "CONDUCTOR", "color": "darkred"},
+    "player":    {"label": "PLAYER", "color": "darkgreen"},
+}
+
+# === Generate and label each QR ===
+def create_qr_with_label(name, url, label, color):
+    qr = qrcode.QRCode(box_size=10, border=4)
     qr.add_data(url)
     qr.make(fit=True)
-    qr_img_raw = qr.make_image(fill_color=foreground, back_color=background).convert('RGB')
-    qr_img_raw = qr_img_raw.resize((side, side), Image.LANCZOS)
+    img = qr.make_image(fill_color=color, back_color="white").convert("RGB")
 
-    # Composite image with padding for label
-    qr_img = Image.new("RGBA", (qr_width, qr_height), (0, 0, 0, 0))
-    qr_img.paste(qr_img_raw, (extra_padding, 0))
+    # Add label
+    label_height = 40
+    font = ImageFont.load_default()
+    W, H = img.size
+    canvas = Image.new("RGB", (W, H + label_height), "white")
+    canvas.paste(img, (0, 0))
 
-    # Draw label
-    if qr_id:
-        draw = ImageDraw.Draw(qr_img)
-        try:
-            font = ImageFont.truetype("/Library/Fonts/Arial Bold.ttf", 24)
-        except IOError:
-            font = ImageFont.load_default()
-        text_width = draw.textlength(qr_id, font=font)
-        draw.text((extra_padding - text_width, 5), qr_id, fill="white", font=font)
+    draw = ImageDraw.Draw(canvas)
+    bbox = draw.textbbox((0, 0), label, font=font)
+    text_w = bbox[2] - bbox[0]
+    text_h = bbox[3] - bbox[1]
+    draw.text(((W - text_w) / 2, H + (label_height - text_h) / 2), label, fill=color, font=font)
 
-    # Save
-    filename = f"qr_{name}.png"
-    path = os.path.join(OUTPUT_DIR, filename)
-    qr_img.save(path)
-    print(f"📌 Saved QR code: {path}")
-
-# Example usage
-if __name__ == "__main__":
-    generate_qr_image(
-        name="localhost8001_concert",
-        url="http://localhost:8001/sg-es6-gui-V1.html?mode=concert",
-        qr_id="CONDUCTOR",
-        foreground="black",
-        background="white"
-    )
-
-    generate_qr_image(
-        name="localhost8002_preview",
-        url="http://localhost:8002/sg-es6-gui-V1.html?mode=preview",
-        qr_id="PLAYER",
-        foreground="blue",
-        background="white"
-    )
+    filename = os.path.join(qr_dir, f"qr_{name}.png")
+    canvas.save(filename)
+    print(f"📌 Saved QR code: {filename}")
+    
+# === Run ===
+for name, url in targets.items():
+    create_qr_with_label(name, url, styles[name]["label"], styles[name]["color"])
 

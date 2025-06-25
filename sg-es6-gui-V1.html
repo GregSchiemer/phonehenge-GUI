@@ -1,37 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>🌛 SG GUI (ES6 Only)</title>
-  <link rel="stylesheet" href="./css/bootstrap.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <title>Phonehenge GUI</title>
   <style>
-    .canvas-wrapper {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      background: black;
     }
-    canvas {
-      border: 1px solid #ccc;
+
+    #mobile {
       display: block;
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #rotate-message {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 999;
+      width: 100%;
+      height: 100%;
+      background: black;
+      color: white;
+      font-family: sans-serif;
+      font-size: 1.5em;
+      text-align: center;
+      padding-top: 40vh;
+    }
+
+    @media screen and (orientation: landscape) {
+      #mobile {
+        display: none;
+      }
+
+      #rotate-message {
+        display: block;
+      }
     }
   </style>
 </head>
+
 <body>
-  <div class="container text-center">
-    <h2 class="mt-2">🌛 ES6 GUI Benchmark (CSOUND Toggle)</h2>
-  </div>
-  <div class="canvas-wrapper">
-    <canvas id="mobile" width="390" height="844"></canvas>
-  </div>
-  <!-- GUI+Audio entrypoint -->
+  <canvas id="mobile"></canvas>
+  <div id="rotate-message">🔁 Please rotate your device to portrait mode</div>
+
   <script type="module">
     import { initApp } from './js/sg-ES6/main.js';
 
-    window.addEventListener("DOMContentLoaded", () => {
+    function launch() {
       console.log("🎡 DOM ready → launching app");
       initApp();
+    }
+
+    // Optionally disable in landscape:
+    function isLandscape() {
+      return window.innerWidth > window.innerHeight;
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+if (isTouchDevice && isLandscape()) {
+  console.log("⚠️ Device is in landscape mode. App paused.");
+  // Do NOT launch app on mobile if landscape
+	} else {
+  	launch(); // Always allow on desktop
+	}
+});
+
+    window.addEventListener("orientationchange", () => {
+      if (!isLandscape()) {
+        launch();  // Re-launch if needed when back to portrait
+      }
     });
-  </script>  
+  </script>
 </body>
 </html>
